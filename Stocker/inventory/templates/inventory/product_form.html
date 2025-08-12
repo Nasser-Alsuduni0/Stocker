@@ -1,0 +1,23 @@
+{% extends "main/app_base.html" %}
+{% block title %}Product – Stocker{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold">{{ view.object|default:'New Product' }}</h1>
+
+<form method="post" class="space-y-4 bg-white border rounded-2xl p-4">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="grid md:grid-cols-2 gap-4">
+    {% for field in form %}
+      <label class="text-sm">
+        <span class="block text-gray-600 mb-1">{{ field.label }}</span>
+        {{ field }}
+        {% for e in field.errors %}<span class="block text-xs text-red-600 mt-1">{{ e }}</span>{% endfor %}
+      </label>
+    {% endfor %}
+  </div>
+  <div class="flex gap-2">
+    <button class="rounded-lg border px-3 py-2 text-sm">Save</button>
+    <a href="{% url 'inventory:product_list' %}" class="rounded-lg border px-3 py-2 text-sm">Cancel</a>
+  </div>
+</form>
+{% endblock %}

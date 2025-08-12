@@ -1,0 +1,177 @@
+{% extends "main/app_base.html" %}
+{% block title %}Dashboard – Stocker{% endblock %}
+
+{% block content %}
+<header><h1 class="text-xl font-semibold">Overview</h1></header>
+
+<div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+  {% for t in stat_cards %}
+  <div class="rounded-2xl border bg-white p-4">
+    <div class="text-sm text-gray-500 mb-2">{{ t.label }}</div>
+    <div class="h-10 rounded-lg border grid place-items-center text-base font-semibold">
+      {{ t.value }}
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-gray-500">No stats yet.</div>
+  {% endfor %}
+</div>
+
+<div class="grid lg:grid-cols-3 gap-4 mt-4">
+  <div class="lg:col-span-2 rounded-2xl border bg-white p-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-sm text-gray-600">Stock Status</h2>
+      <span class="text-xs text-gray-400">Last 30 days</span>
+    </div>
+    <div class="h-64">
+      <canvas id="overviewChart"></canvas>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border bg-white p-4">
+    <h2 class="text-sm text-gray-600 mb-2">Recent Activity</h2>
+    <div class="space-y-2">
+      {% for m in recent_rows %}
+        <div class="rounded-lg border p-2 text-sm flex items-center justify-between">
+          <span class="truncate">{{ m.product.name }}</span>
+          <span class="text-gray-500">{{ m.get_movement_type_display }} · {{ m.quantity }}</span>
+        </div>
+      {% empty %}
+        <div class="text-gray-500 text-sm">No recent movements.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="rounded-2xl border bg-white p-4 mt-4">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-sm text-gray-600">Inventory</h2>
+    <form method="get" class="hidden md:flex items-center gap-2">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search by name, SKU, category, supplier"
+             class="rounded-lg border px-3 py-2 text-sm w-72">
+      <button class="rounded-lg border px-3 py-2 text-sm">Search</button>
+      {% if q %}
+        <a href="? " class="text-sm text-gray-500 underline">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b">
+        <tr class="text-left">
+          <th class="p-3">Product</th>
+          <th class="p-3">SKU</th>
+          <th class="p-3">Category</th>
+          <th class="p-3">On hand</th>
+          <th class="p-3">Reorder</th>
+          <th class="p-3">Suppliers</th>
+          <th class="p-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in page_obj.object_list %}
+        <tr class="border-b hover:bg-gray-50">
+          <td class="p-3">
+            <a class="underline" href="{% url 'inventory:product_detail' p.pk %}">{{ p.name }}</a>
+            {% if p.quantity_on_hand <= p.reorder_level %}
+              <span class="ml-2 text-xs rounded px-1.5 py-0.5 border text-red-700 border-red-200 bg-red-50">Low</span>
+            {% endif %}
+          </td>
+          <td class="p-3">{{ p.sku }}</td>
+          <td class="p-3">{{ p.category|default:"—" }}</td>
+          <td class="p-3">{{ p.quantity_on_hand }}</td>
+          <td class="p-3">{{ p.reorder_level }}</td>
+          <td class="p-3">
+            {% with sup=p.suppliers.all %}
+              {% if sup %}
+                {{ sup|join:", " }}
+              {% else %}
+                —
+              {% endif %}
+            {% endwith %}
+          </td>
+          <td class="p-3 text-right">
+            {% if perms.inventory.adjust_stock %}
+              <a href="{% url 'inventory:product_adjust' p.pk %}" class="rounded-lg border px-2 py-1 text-xs">Adjust</a>
+            {% endif %}
+            {% if perms.inventory.change_product %}
+              <a href="{% url 'inventory:product_update' p.pk %}" class="rounded-lg border px-2 py-1 text-xs ml-1">Edit</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td class="p-6 text-gray-500" colspan="7">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex items-center justify-between mt-3 text-sm">
+    <div>
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      ({{ page_obj.paginator.count }} items)
+    </div>
+    <div class="flex items-center gap-2">
+      {% if page_obj.has_previous %}
+        <a class="rounded border px-2 py-1" href="?q={{ q }}&page={{ page_obj.previous_page_number }}&o={{ order }}">Prev</a>
+      {% else %}
+        <span class="rounded border px-2 py-1 opacity-50">Prev</span>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a class="rounded border px-2 py-1" href="?q={{ q }}&page={{ page_obj.next_page_number }}&o={{ order }}">Next</a>
+      {% else %}
+        <span class="rounded border px-2 py-1 opacity-50">Next</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="get" class="mt-3 md:hidden flex items-center gap-2">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search…"
+           class="rounded-lg border px-3 py-2 text-sm w-full">
+    <button class="rounded-lg border px-3 py-2 text-sm">Go</button>
+  </form>
+</div>
+
+
+{{ chart_labels|json_script:"ov_labels" }}
+{{ chart_in|json_script:"ov_in" }}
+{{ chart_out|json_script:"ov_out" }}
+{{ chart_adj|json_script:"ov_adj" }}
+{{ chart_net|json_script:"ov_net" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const J = id => {
+    const el = document.getElementById(id);
+    return el ? JSON.parse(el.textContent || "[]") : [];
+  };
+
+  (function(){
+    const el = document.getElementById('overviewChart');
+    if (!el) return;
+
+    new Chart(el, {
+      type: 'line',
+      data: {
+        labels: J('ov_labels'),
+        datasets: [
+          { label: 'IN',  data: J('ov_in'),  tension: 0.3 },
+          { label: 'OUT', data: J('ov_out'), tension: 0.3 },
+          { label: 'ADJ', data: J('ov_adj'), tension: 0.3 },
+          { label: 'NET', data: J('ov_net'), tension: 0.3, borderWidth: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'bottom' } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
+      }
+    });
+  })();
+</script>
+{% endblock %}

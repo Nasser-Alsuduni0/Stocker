@@ -1,0 +1,50 @@
+{% extends "main/app_base.html" %}
+{% block title %}Supplier – Stocker{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold">{{ view.object|default:"New Supplier" }}</h1>
+
+<form method="post" enctype="multipart/form-data" class="space-y-4 bg-white border rounded-2xl p-4 max-w-3xl">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <label class="text-sm block">
+      <span class="block text-gray-600 mb-1">{{ form.name.label }}</span>
+      {{ form.name }} {% for e in form.name.errors %}<span class="block text-xs text-red-600 mt-1">{{ e }}</span>{% endfor %}
+    </label>
+    <label class="text-sm block">
+      <span class="block text-gray-600 mb-1">{{ form.logo.label }}</span>
+      {{ form.logo }} {% for e in form.logo.errors %}<span class="block text-xs text-red-600 mt-1">{{ e }}</span>{% endfor %}
+    </label>
+
+    <label class="text-sm block">
+      <span class="block text-gray-600 mb-1">{{ form.email.label }}</span>
+      {{ form.email }}
+    </label>
+    <label class="text-sm block">
+      <span class="block text-gray-600 mb-1">{{ form.phone.label }}</span>
+      {{ form.phone }}
+    </label>
+
+    <label class="text-sm block md:col-span-2">
+      <span class="block text-gray-600 mb-1">{{ form.website.label }}</span>
+      {{ form.website }}
+    </label>
+
+    <label class="text-sm block md:col-span-2">
+      <span class="block text-gray-600 mb-1">{{ form.address.label }}</span>
+      {{ form.address }}
+    </label>
+
+    <label class="text-sm block md:col-span-2">
+      <span class="block text-gray-600 mb-1">{{ form.notes.label }}</span>
+      {{ form.notes }}
+    </label>
+  </div>
+
+  <div class="flex gap-2">
+    <button class="rounded-lg border px-3 py-2 text-sm">Save</button>
+    <a href="{% url 'suppliers:supplier_list' %}" class="rounded-lg border px-3 py-2 text-sm">Cancel</a>
+  </div>
+</form>
+{% endblock %}

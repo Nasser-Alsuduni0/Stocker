@@ -1,0 +1,17 @@
+{% extends "main/app_base.html" %}
+{% block title %}Delete Category – Stocker{% endblock %}
+
+{% block content %}
+<h1 class="text-xl font-semibold">Delete category</h1>
+<p class="mb-4">Are you sure you want to delete <strong>{{ object.name }}</strong>?</p>
+<p class="mb-4 text-sm text-gray-600">
+  Products in this category will keep their data; their category will become empty (uncategorized).
+</p>
+
+<form method="post" class="flex gap-2">
+  {% csrf_token %}
+  <button class="rounded-lg border px-3 py-2 text-sm text-red-700">Yes, delete</button>
+  <a href="{% url 'inventory:category_list' %}" class="rounded-lg border px-3 py-2 text-sm">Cancel</a>
+</form>
+
+{% endblock %}

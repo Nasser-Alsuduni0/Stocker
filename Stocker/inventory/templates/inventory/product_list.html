@@ -1,0 +1,58 @@
+{% extends "main/app_base.html" %}
+{% block title %}Products – Stocker{% endblock %}
+{% block content %}
+<header class="flex items-center justify-between">
+  <h1 class="text-xl font-semibold">Products</h1>
+  <a href="{% url 'inventory:product_create' %}" class="rounded-lg border px-3 py-2 text-sm">Add product</a>
+</header>
+
+<form method="get" class="flex items-center gap-3">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search name, SKU, category" class="w-72 rounded-lg border px-3 py-2 text-sm">
+  <select name="status" class="rounded-lg border px-3 py-2 text-sm">
+    <option value="">All</option>
+    <option value="low" {% if status == 'low' %}selected{% endif %}>Low stock</option>
+  </select>
+  <button class="rounded-lg border px-3 py-2 text-sm">Search</button>
+</form>
+
+<div class="overflow-x-auto bg-white border rounded-2xl">
+  <table class="w-full text-sm">
+    <thead class="border-b bg-gray-50">
+      <tr class="text-left">
+        <th class="p-3">Name</th><th class="p-3">SKU</th><th class="p-3">Category</th>
+        <th class="p-3">On hand</th><th class="p-3">Reorder</th><th class="p-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-3">
+          <a class="underline" href="{% url 'inventory:product_detail' p.pk %}">{{ p.name }}</a>
+          {% if p.is_low_stock %}<span class="ml-2 text-xs text-red-600">Low</span>{% endif %}
+        </td>
+        <td class="p-3">{{ p.sku }}</td>
+        <td class="p-3">{{ p.category|default:"—" }}</td>
+        <td class="p-3">{{ p.quantity_on_hand }}</td>
+        <td class="p-3">{{ p.reorder_level }}</td>
+        <td class="p-3 text-right">
+          <a href="{% url 'inventory:product_update' p.pk %}" class="text-blue-700 hover:underline mr-3">Edit</a>
+          {% if perms.inventory.delete_product %}
+            <a href="{% url 'inventory:product_delete' p.pk %}" class="text-red-700 hover:underline">Delete</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td class="p-6 text-gray-500" colspan="6">No products found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<div class="flex items-center gap-2">
+  {% if page_obj.has_previous %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&status={{ status }}&page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+  <span class="text-sm text-gray-600">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&status={{ status }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+<h2 style="margin:0 0 12px">Low stock alert</h2>
+<p>The following products are at or below the reorder level:</p>
+<ul>
+  {% for p in products %}
+    <li><strong>{{ p.name }}</strong> (SKU: {{ p.sku }}) — on hand: {{ p.quantity_on_hand }}, reorder at: {{ p.reorder_level }}</li>
+  {% endfor %}
+</ul>
+<p style="color:#888;font-size:12px">Sent by Stocker</p>

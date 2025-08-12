@@ -1,0 +1,38 @@
+{% url 'main:dashboard' as dashboard_url %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign in – Stocker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen grid place-items-center bg-gray-50 text-gray-800">
+  <div class="w-full max-w-sm rounded-2xl border bg-white p-6">
+    <h1 class="text-xl font-semibold mb-4 text-center">Sign in</h1>
+    {% if form.errors %}
+      <div class="mb-3 rounded border border-red-300 bg-red-50 text-red-700 p-3 text-sm">
+        Invalid username/password.
+      </div>
+    {% endif %}
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next|default:dashboard_url }}">
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Username</label>
+        <input type="text" name="username" autofocus required class="w-full rounded-lg border px-3 py-2">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Password</label>
+        <input type="password" name="password" required class="w-full rounded-lg border px-3 py-2">
+      </div>
+      <button class="w-full rounded-lg border px-3 py-2">Sign in</button>
+    </form>
+    <div class="text-xs text-gray-500 mt-3 text-center">
+      <a class="underline" href="{% url 'password_reset' %}">Forgot password?</a>
+      <span class="mx-2">·</span>
+      <a class="underline" href="{% url 'accounts:signup' %}{% if next %}?next={{ next }}{% endif %}">Create account</a>
+    </div>
+  </div>
+</body>
+</html>

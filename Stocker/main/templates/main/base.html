@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Stocker{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  {% load static %}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+ 
+  <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-8 rounded bg-gray-200" aria-hidden="true"><img src="{% static 'images/logo.png' %}"></div>
+        <a href="{% url 'main:home' %}" class="font-semibold tracking-wide">Stocker</a>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="{% url 'main:home' %}#hero" class="hover:opacity-70">Home</a>
+        <a href="{% url 'main:home' %}#features" class="hover:opacity-70">Core Features</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'main:dashboard' %}" class="hover:opacity-70">Dashboard</a>
+        {% endif %}
+      </nav>
+      <div class="flex items-center gap-2">
+          {% if user.is_authenticated %}
+            <a href="{% url 'main:dashboard' %}" class="px-3 py-1.5 rounded-lg border text-sm">Dashboard</a>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button class="px-3 py-1.5 rounded-lg border text-sm">Logout</button>
+            </form>
+          {% else %}
+            <a href="{% url 'accounts:signup' %}" class="px-3 py-1.5 rounded-lg border text-sm">Sign up</a>
+            <a href="{% url 'login' %}" class="px-3 py-1.5 rounded-lg border text-sm">Sign in</a>
+          {% endif %}
+      </div>
+    </div>
+  </header>
+
+
+  {% if messages %}
+    <div class="mx-auto max-w-7xl px-4 mt-4">
+      {% for m in messages %}
+        <div class="mb-2 rounded border px-4 py-3 {{ m.tags|default:'' }}">
+          {{ m }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  <footer id="contact" class="border-t mt-12">
+    <div class="mx-auto max-w-7xl px-4 py-10">
+      <div class="grid md:grid-cols-3 gap-6">
+        <div>
+          <div class="h-6 w-24 rounded bg-gray-200 mb-3"></div>
+          <p class="text-sm text-gray-500">Manage Corporate Inventory with Stocker.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="font-medium mb-2">Menu</div>
+            <ul class="space-y-1 text-gray-600">
+              <li><a href="{% url 'main:home' %}">Overview</a></li>
+              <li><a href="{% url 'main:home' %}#features">Features</a></li>
+              {% if user.is_authenticated %}<li><a href="{% url 'main:dashboard' %}">Dashboard</a></li>{% endif %}
+            </ul>
+          </div>
+          <div>
+            <div class="font-medium mb-2">Resources</div>
+            <ul class="space-y-1 text-gray-600">
+              <li>Docs</li>
+              <li>Support</li>
+              <li>Status</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rounded-2xl border p-4 grid place-items-center text-gray-400">Footer CTA Placeholder</div>
+      </div>
+      <div class="mt-8 text-xs text-gray-500">© 2025 Stocker. All right reserved.</div>
+    </div>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

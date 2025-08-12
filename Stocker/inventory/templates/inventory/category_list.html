@@ -1,0 +1,59 @@
+{% extends "main/app_base.html" %}
+{% block title %}Categories – Stocker{% endblock %}
+
+{% block content %}
+<header class="flex items-center justify-between">
+  <h1 class="text-xl font-semibold">Categories</h1>
+  {% if perms.inventory.add_category %}
+    <a href="{% url 'inventory:category_create' %}" class="rounded-lg border px-3 py-2 text-sm">Add category</a>
+  {% endif %}
+</header>
+
+<form method="get" class="flex items-center gap-3">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search name or description"
+         class="w-72 rounded-lg border px-3 py-2 text-sm">
+  <button class="rounded-lg border px-3 py-2 text-sm">Search</button>
+</form>
+
+<div class="overflow-x-auto bg-white border rounded-2xl">
+  <table class="w-full text-sm">
+    <thead class="border-b bg-gray-50">
+      <tr class="text-left">
+        <th class="p-3">Name</th>
+        <th class="p-3">Description</th>
+        <th class="p-3">Products</th>
+        <th class="p-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in categories %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-3 font-medium">{{ c.name }}</td>
+        <td class="p-3 text-gray-600">{{ c.description|default:"—" }}</td>
+        <td class="p-3">{{ c.product_count }}</td>
+        <td class="p-3 text-right">
+          {% if perms.inventory.change_category %}
+            <a href="{% url 'inventory:category_update' c.pk %}" class="text-blue-700 hover:underline mr-3">Edit</a>
+          {% endif %}
+          {% if perms.inventory.delete_category %}
+            <a href="{% url 'inventory:category_delete' c.pk %}" class="text-red-700 hover:underline">Delete</a>
+          {% endif %}
+          {# Optional: jump to products in this category #}
+          {# <a href="{% url 'inventory:product_list' %}?category={{ c.pk }}" class="ml-3 underline">View products</a> #}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td class="p-6 text-gray-500" colspan="4">No categories found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+  <div class="flex items-center gap-2">
+    {% if page_obj.has_previous %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+    <span class="text-sm text-gray-600">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}

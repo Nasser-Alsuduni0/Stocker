@@ -1,0 +1,246 @@
+{% extends "main/app_base.html" %}
+{% block title %}Reports – Stocker{% endblock %}
+
+{% block content %}
+<header class="flex items-center justify-between">
+  <h1 class="text-xl font-semibold">Reports & Analytics</h1>
+  <form method="get" class="flex items-center gap-2">
+    <input type="date" name="start" value="{{ start|date:'Y-m-d' }}" class="rounded-lg border px-3 py-2 text-sm">
+    <input type="date" name="end" value="{{ end|date:'Y-m-d' }}" class="rounded-lg border px-3 py-2 text-sm">
+    <button class="rounded-lg border px-3 py-2 text-sm">Apply</button>
+  </form>
+</header>
+
+<div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+  <div class="rounded-2xl border bg-white p-4">
+    <div class="text-sm text-gray-500 mb-1">Total Products</div>
+    <div class="text-2xl">{{ inv.total_products }}</div>
+  </div>
+  <div class="rounded-2xl border bg-white p-4">
+    <div class="text-sm text-gray-500 mb-1">On Hand (Sum)</div>
+    <div class="text-2xl">{{ inv.total_on_hand }}</div>
+  </div>
+  <div class="rounded-2xl border bg-white p-4">
+    <div class="text-sm text-gray-500 mb-1">Inventory Value</div>
+    <div class="text-2xl">{{ inv.total_value }}</div>
+  </div>
+  <div class="rounded-2xl border bg-white p-4">
+    <div class="text-sm text-gray-500 mb-1">Low Stock</div>
+    <div class="text-2xl">{{ inv.low_stock }}</div>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4 mt-4">
+  <div class="rounded-2xl border bg-white p-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-sm text-gray-600">Stock Movements (Daily)</h2>
+      <span class="text-xs text-gray-400">{{ start }} → {{ end }}</span>
+    </div>
+    <div class="h-56">
+      <canvas id="movementsChart"></canvas>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border bg-white p-4">
+    <h2 class="text-sm text-gray-600 mb-2">Inventory Value by Category</h2>
+    <div class="h-56">
+      <canvas id="categoryChart"></canvas>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border bg-white p-4 lg:col-span-2">
+    <h2 class="text-sm text-gray-600 mb-2">Top Suppliers by Inventory Value</h2>
+    <div class="h-64">
+      <canvas id="suppliersChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="flex flex-wrap gap-2 mt-4">
+  <a href="{% url 'inventory:inventory_report_csv' %}" class="rounded-lg border px-3 py-2 text-sm">Download Inventory CSV</a>
+  <a href="{% url 'inventory:supplier_report_csv' %}" class="rounded-lg border px-3 py-2 text-sm">Download Suppliers CSV</a>
+</div>
+
+<div class="rounded-2xl border bg-white p-4 mt-4">
+  <div class="flex items-center justify-between mb-2">
+    <h2 class="text-sm text-gray-600">Stock Movements ({{ start }} → {{ end }})</h2>
+  </div>
+  <div class="grid sm:grid-cols-4 gap-4">
+    <div class="rounded-lg border p-3"><div class="text-xs text-gray-500">Stock In</div><div class="text-xl">{{ mv.in_qty }}</div></div>
+    <div class="rounded-lg border p-3"><div class="text-xs text-gray-500">Stock Out</div><div class="text-xl">{{ mv.out_qty }}</div></div>
+    <div class="rounded-lg border p-3"><div class="text-xs text-gray-500">Adjustments</div><div class="text-xl">{{ mv.adj_qty }}</div></div>
+    <div class="rounded-lg border p-3"><div class="text-xs text-gray-500">Net Change</div><div class="text-xl">{{ mv.net_change }}</div></div>
+  </div>
+
+  <div class="mt-4 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b">
+        <tr class="text-left">
+          <th class="p-3">When</th><th class="p-3">Product</th><th class="p-3">Type</th><th class="p-3">Qty</th><th class="p-3">Resulting</th><th class="p-3">Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in recent_movements %}
+        <tr class="border-b">
+          <td class="p-3">{{ m.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="p-3"><a class="underline" href="{% url 'inventory:product_detail' m.product_id %}">{{ m.product.name }}</a></td>
+          <td class="p-3">{{ m.get_movement_type_display }}</td>
+          <td class="p-3">{{ m.quantity }}</td>
+          <td class="p-3">{{ m.resulting_quantity }}</td>
+          <td class="p-3">{{ m.reason|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td class="p-6 text-gray-500" colspan="6">No movements in this range.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="rounded-2xl border bg-white p-4 mt-4">
+  <h2 class="text-sm text-gray-600 mb-3">By Category</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b">
+        <tr class="text-left"><th class="p-3">Category</th><th class="p-3">Products</th><th class="p-3">On hand</th><th class="p-3">Value</th></tr>
+      </thead>
+      <tbody>
+        {% for r in category_rows %}
+        <tr class="border-b">
+          <td class="p-3">{{ r.category__name|default:"Uncategorized" }}</td>
+          <td class="p-3">{{ r.product_count }}</td>
+          <td class="p-3">{{ r.on_hand }}</td>
+          <td class="p-3">{{ r.value }}</td>
+        </tr>
+        {% empty %}
+        <tr><td class="p-6 text-gray-500" colspan="4">No data.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="rounded-2xl border bg-white p-4 mt-4">
+  <h2 class="text-sm text-gray-600 mb-3">By Supplier</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b">
+        <tr class="text-left"><th class="p-3">Supplier</th><th class="p-3">Products</th><th class="p-3">On hand</th><th class="p-3">Value</th><th class="p-3"></th></tr>
+      </thead>
+      <tbody>
+        {% for s in supplier_rows %}
+        <tr class="border-b">
+          <td class="p-3">{{ s.name }}</td>
+          <td class="p-3">{{ s.product_count }}</td>
+          <td class="p-3">{{ s.on_hand }}</td>
+          <td class="p-3">{{ s.value }}</td>
+          <td class="p-3"><a class="underline" href="{% url 'suppliers:supplier_detail' s.pk %}">View</a></td>
+        </tr>
+        {% empty %}
+        <tr><td class="p-6 text-gray-500" colspan="5">No suppliers.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="rounded-2xl border bg-white p-4 mt-4">
+  <h2 class="text-sm text-gray-600 mb-3">Low Stock (Top 20)</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b">
+        <tr class="text-left">
+          <th class="p-3">Product</th><th class="p-3">SKU</th><th class="p-3">Category</th>
+          <th class="p-3">On hand</th><th class="p-3">Reorder</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in low_stock_list %}
+        <tr class="border-b">
+          <td class="p-3"><a class="underline" href="{% url 'inventory:product_detail' p.pk %}">{{ p.name }}</a></td>
+          <td class="p-3">{{ p.sku }}</td>
+          <td class="p-3">{{ p.category|default:"—" }}</td>
+          <td class="p-3">{{ p.quantity_on_hand }}</td>
+          <td class="p-3">{{ p.reorder_level }}</td>
+        </tr>
+        {% empty %}
+        <tr><td class="p-6 text-gray-500" colspan="5">No low-stock items.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{{ chart_mov_labels|json_script:"mov_labels" }}
+{{ chart_mov_in|json_script:"mov_in" }}
+{{ chart_mov_out|json_script:"mov_out" }}
+{{ chart_mov_adj|json_script:"mov_adj" }}
+{{ chart_mov_net|json_script:"mov_net" }}
+
+{{ chart_cat_labels|json_script:"cat_labels" }}
+{{ chart_cat_values|json_script:"cat_values" }}
+
+{{ chart_sup_labels|json_script:"sup_labels" }}
+{{ chart_sup_values|json_script:"sup_values" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const J = id => JSON.parse(document.getElementById(id).textContent);
+
+  (function(){
+    const el = document.getElementById('movementsChart');
+    if (!el) return;
+    new Chart(el, {
+      type: 'line',
+      data: {
+        labels: J('mov_labels'),
+        datasets: [
+          { label: 'IN',  data: J('mov_in'),  tension: 0.3 },
+          { label: 'OUT', data: J('mov_out'), tension: 0.3 },
+          { label: 'ADJ', data: J('mov_adj'), tension: 0.3 },
+          { label: 'NET', data: J('mov_net'), tension: 0.3, borderWidth: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'bottom' } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
+      }
+    });
+  })();
+
+  (function(){
+    const el = document.getElementById('categoryChart');
+    if (!el) return;
+    new Chart(el, {
+      type: 'bar',
+      data: { labels: J('cat_labels'), datasets: [{ label: 'Value (cost)', data: J('cat_values') }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  })();
+
+  (function(){
+    const el = document.getElementById('suppliersChart');
+    if (!el) return;
+    new Chart(el, {
+      type: 'doughnut',
+      data: { labels: J('sup_labels'), datasets: [{ data: J('sup_values') }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '60%'
+      }
+    });
+  })();
+</script>
+{% endblock %}

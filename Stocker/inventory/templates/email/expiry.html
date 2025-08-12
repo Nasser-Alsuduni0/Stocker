@@ -1,0 +1,8 @@
+<h2 style="margin:0 0 12px">Expiry alert (next {{ days }} days)</h2>
+<p>These products have an expiry date in {{ days }} days or less:</p>
+<ul>
+  {% for p in products %}
+    <li><strong>{{ p.name }}</strong> (SKU: {{ p.sku }}) — expires on: {{ p.expiry_date }} — on hand: {{ p.quantity_on_hand }}</li>
+  {% endfor %}
+</ul>
+<p style="color:#888;font-size:12px">Sent by Stocker</p>
