@@ -134,9 +134,8 @@ As an Inventory Manager, I want to export inventory data to CSV files so that I 
 
 
 ## To be provided by you
-- UML link here.
-- wireframe link here.
-
+- **UML:** [View UML](./docs/Stocker_UML.png)
+- **Wireframe:** [View Wireframe](./docs/Stock-Wireframe.pdf)
 ## Note:
 - use best practices.
 - take good care of user experience (feedback, pagination, etc.)
