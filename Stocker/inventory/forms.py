@@ -16,10 +16,17 @@ class ProductForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         for f in self.fields.values():
             existing = f.widget.attrs.get("class", "")
             f.widget.attrs["class"] = (existing + " w-full rounded-lg border px-3 py-2 text-sm").strip()
+        if user is not None:
+            # Limit category and suppliers to owner's objects
+            if "category" in self.fields:
+                self.fields["category"].queryset = self.fields["category"].queryset.filter(owner=user)
+            if "suppliers" in self.fields:
+                self.fields["suppliers"].queryset = self.fields["suppliers"].queryset.filter(owner=user)
 
 class StockAdjustForm(forms.Form):
     movement_type = forms.ChoiceField(choices=MOVEMENT_TYPES)

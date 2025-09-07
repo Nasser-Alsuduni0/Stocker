@@ -1,25 +1,25 @@
 {% extends "main/base.html" %}
 {% load static %}
-{% block title %}Home – Stocker{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Home – Stocker" %}{% endblock %}
 {% block content %}
 
 <section id="hero" class="mx-auto max-w-7xl px-4 py-14">
     <div class="grid md:grid-cols-2 gap-10 items-center">
         <div>
             <h1 class="text-3xl md:text-5xl font-semibold leading-tight mb-4">
-                Manage Corporate Inventory with <span class="underline decoration-gray-300">Stocker</span>
+                {% blocktrans %}Manage Corporate Inventory with <span class="underline decoration-gray-300">Stocker</span>{% endblocktrans %}
             </h1>
             <p class="text-gray-600 mb-6">
-                A clean, responsive system for products, categories, suppliers, stock updates, alerts and CSV
-                import/export.
+                {% blocktrans %}A clean, responsive system for products, categories, suppliers, stock updates, alerts and CSV import/export.{% endblocktrans %}
             </p>
             <div class="flex gap-3">
                 {% if user.is_authenticated %}
-                <a href="{% url 'main:dashboard' %}" class="px-4 py-2 rounded-lg border bg-white">Open Dashboard</a>
+                <a href="{% url 'main:dashboard' %}" class="px-4 py-2 rounded-lg border bg-white">{% trans "Open Dashboard" %}</a>
                 {% else %}
-                <a href="{% url 'login' %}" class="px-4 py-2 rounded-lg border bg-white">Sign in to Dashboard</a>
+                <a href="{% url 'login' %}" class="px-4 py-2 rounded-lg border bg-white">{% trans "Sign in to Dashboard" %}</a>
                 {% endif %}
-                <a href="#features" class="px-4 py-2 rounded-lg border">Core Features</a>
+                <a href="#features" class="px-4 py-2 rounded-lg border">{% trans "Core Features" %}</a>
             </div>
         </div>
         <div class="h-64 md:h-80 rounded-2xl border bg-white overflow-hidden">
@@ -35,7 +35,7 @@
 </section>
 
 <section id="features" class="mx-auto max-w-7xl px-4 py-12">
-  <h2 class="text-xl font-semibold mb-6">Core Features Overview</h2>
+  <h2 class="text-xl font-semibold mb-6">{% trans "Core Features Overview" %}</h2>
 
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
     {% load static %}

@@ -1,60 +1,61 @@
 {% extends "main/app_base.html" %}
+{% load i18n %}
 {% block title %}{{ product.name }} – Stocker{% endblock %}
 {% block content %}
 <header class="flex items-center justify-between">
   <div>
     <h1 class="text-xl font-semibold">{{ product.name }}</h1>
-    <p class="text-sm text-gray-500">SKU: {{ product.sku }} • {{ product.category|default:"Uncategorized" }}</p>
+    <p class="text-sm text-gray-500">{% trans "SKU" %}: {{ product.sku }} • {{ product.category|default:_('Uncategorized') }}</p>
   </div>
   <div class="flex gap-2">
-    <a href="{% url 'inventory:product_update' product.pk %}" class="rounded-lg border px-3 py-2 text-sm">Edit</a>
+    <a href="{% url 'inventory:product_update' product.pk %}" class="rounded-lg border px-3 py-2 text-sm">{% trans "Edit" %}</a>
     {% if perms.inventory.delete_product %}
-      <a href="{% url 'inventory:product_delete' product.pk %}" class="rounded-lg border px-3 py-2 text-sm text-red-700">Delete</a>
+      <a href="{% url 'inventory:product_delete' product.pk %}" class="rounded-lg border px-3 py-2 text-sm text-red-700">{% trans "Delete" %}</a>
     {% endif %}
   </div>
 </header>
 
 <div class="grid md:grid-cols-3 gap-4">
   <div class="rounded-2xl border bg-white p-4">
-    <div class="text-sm text-gray-500 mb-2">On hand</div>
+    <div class="text-sm text-gray-500 mb-2">{% trans "On hand" %}</div>
     <div class="text-2xl">{{ product.quantity_on_hand }}</div>
-    <div class="text-xs text-gray-500 mt-1">Reorder at ≤ {{ product.reorder_level }} {% if product.is_low_stock %}<span class="text-red-600 ml-1">Low</span>{% endif %}</div>
+    <div class="text-xs text-gray-500 mt-1">{% trans "Reorder at" %} ≤ {{ product.reorder_level }} {% if product.is_low_stock %}<span class="text-red-600 ml-1">{% trans "Low" %}</span>{% endif %}</div>
   </div>
   <div class="rounded-2xl border bg-white p-4">
-    <div class="text-sm text-gray-500 mb-2">Unit</div>
+    <div class="text-sm text-gray-500 mb-2">{% trans "Unit" %}</div>
     <div class="text-xl">{{ product.get_unit_display }}</div>
   </div>
   <div class="rounded-2xl border bg-white p-4">
-    <div class="text-sm text-gray-500 mb-2">Pricing</div>
-    <div class="text-sm">Cost: {{ product.price_cost }} • Sale: {{ product.price_sale }}</div>
+    <div class="text-sm text-gray-500 mb-2">{% trans "Pricing" %}</div>
+    <div class="text-sm">{% trans "Cost" %}: {{ product.price_cost }} • {% trans "Sale" %}: {{ product.price_sale }}</div>
   </div>
 </div>
 
 {% if perms.inventory.add_stockmovement %}
 <form method="post" action="{% url 'inventory:adjust_stock' product.pk %}" class="rounded-2xl border bg-white p-4">
   {% csrf_token %}
-  <h2 class="text-sm text-gray-600 mb-3">Adjust Stock</h2>
+  <h2 class="text-sm text-gray-600 mb-3">{% trans "Adjust Stock" %}</h2>
   <div class="grid md:grid-cols-4 gap-3">
     <select name="movement_type" class="rounded-lg border px-3 py-2 text-sm">
-      <option value="IN">Stock In</option>
-      <option value="OUT">Stock Out</option>
-      <option value="ADJ">Adjustment</option>
+      <option value="IN">{% trans "Stock In" %}</option>
+      <option value="OUT">{% trans "Stock Out" %}</option>
+      <option value="ADJ">{% trans "Adjustment" %}</option>
     </select>
-    <input type="number" name="quantity" min="1" class="rounded-lg border px-3 py-2 text-sm" placeholder="Qty">
-    <input type="text" name="reason" class="rounded-lg border px-3 py-2 text-sm" placeholder="Reason (optional)">
-    <button class="rounded-lg border px-3 py-2 text-sm">Apply</button>
+    <input type="number" name="quantity" min="1" class="rounded-lg border px-3 py-2 text-sm" placeholder="{% trans "Qty" %}">
+    <input type="text" name="reason" class="rounded-lg border px-3 py-2 text-sm" placeholder="{% trans "Reason (optional)" %}">
+    <button class="rounded-lg border px-3 py-2 text-sm">{% trans "Apply" %}</button>
   </div>
 </form>
 {% endif %}
 
 <div class="rounded-2xl border bg-white">
-  <div class="p-4 border-b"><h2 class="text-sm text-gray-600">Recent Movements</h2></div>
+  <div class="p-4 border-b"><h2 class="text-sm text-gray-600">{% trans "Recent Movements" %}</h2></div>
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b">
         <tr class="text-left">
-          <th class="p-3">When</th><th class="p-3">Type</th><th class="p-3">Qty</th>
-          <th class="p-3">Resulting</th><th class="p-3">By</th><th class="p-3">Reason</th>
+          <th class="p-3">{% trans "When" %}</th><th class="p-3">{% trans "Type" %}</th><th class="p-3">{% trans "Qty" %}</th>
+          <th class="p-3">{% trans "Resulting" %}</th><th class="p-3">{% trans "By" %}</th><th class="p-3">{% trans "Reason" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -68,7 +69,7 @@
           <td class="p-3">{{ m.reason|default:"—" }}</td>
         </tr>
         {% empty %}
-        <tr><td class="p-6 text-gray-500" colspan="6">No movements yet.</td></tr>
+        <tr><td class="p-6 text-gray-500" colspan="6">{% trans "No movements yet." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>

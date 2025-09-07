@@ -1,0 +1,38 @@
+{% extends "main/app_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Purchase Orders – Stocker" %}{% endblock %}
+{% block content %}
+<header class="flex items-center justify-between">
+  <h1 class="text-xl font-semibold">{% trans "Purchase Orders" %}</h1>
+  <a href="{% url 'suppliers:purchaseorder_create' %}" class="rounded-lg border px-3 py-2 text-sm">{% trans "New PO" %}</a>
+  </header>
+
+<div class="overflow-x-auto bg-white border rounded-2xl mt-3">
+  <table class="w-full text-sm">
+    <thead class="border-b bg-gray-50">
+      <tr class="text-left">
+        <th class="p-3">{% trans "PO#" %}</th>
+        <th class="p-3">{% trans "Supplier" %}</th>
+        <th class="p-3">{% trans "Status" %}</th>
+        <th class="p-3">{% trans "Created" %}</th>
+        <th class="p-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-3">PO#{{ o.id }}</td>
+        <td class="p-3">{{ o.supplier.name }}</td>
+        <td class="p-3">{{ o.get_status_display }}</td>
+        <td class="p-3">{{ o.created_at|date:"Y-m-d" }}</td>
+        <td class="p-3 text-right"><a class="underline" href="{% url 'suppliers:purchaseorder_detail' o.pk %}">{% trans "Open" %}</a></td>
+      </tr>
+      {% empty %}
+      <tr><td class="p-6 text-gray-500" colspan="5">{% trans "No purchase orders yet." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+

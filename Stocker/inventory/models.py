@@ -5,19 +5,26 @@ from suppliers.models import Supplier
 User = get_user_model()
 
 class Category(models.Model):
-    name = models.CharField(max_length=120, unique=True)
+    owner = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name="categories")
+    name = models.CharField(max_length=120)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "name"], name="category_owner_name_unique"),
+        ]
 
 UNIT_CHOICES = [
     ("PCS", "Pieces"), ("BOX", "Box"), ("KG", "Kilogram"), ("L", "Liter"),
 ]
 
 class Product(models.Model):
+    owner = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name="products")
     name = models.CharField(max_length=200)
-    sku = models.CharField(max_length=64, unique=True)
+    sku = models.CharField(max_length=64)
     category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.SET_NULL, related_name="products")
     description = models.TextField(blank=True, null=True)
     unit = models.CharField(max_length=8, choices=UNIT_CHOICES, default="PCS")
@@ -32,6 +39,9 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "sku"], name="product_owner_sku_unique"),
+        ]
         permissions = [
         ]
 

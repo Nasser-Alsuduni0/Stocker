@@ -1,23 +1,24 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html><head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Adjust Stock – Stocker</title>
+  <title>{% trans "Adjust Stock – Stocker" %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
   <section class="max-w-xl mx-auto p-6 space-y-6">
-    <h1 class="text-xl font-semibold">Adjust Stock – {{ product }}</h1>
+    <h1 class="text-xl font-semibold">{% trans "Adjust Stock" %} – {{ product }}</h1>
     <form method="post" class="space-y-3 bg-white border rounded-2xl p-4">
       {% csrf_token %}
       {{ form.non_field_errors }}
       <div class="grid md:grid-cols-2 gap-3">
-        <label class="text-sm">Type {{ form.movement_type }}</label>
-        <label class="text-sm">Quantity {{ form.quantity }}</label>
+        <label class="text-sm">{% trans "Type" %} {{ form.movement_type }}</label>
+        <label class="text-sm">{% trans "Quantity" %} {{ form.quantity }}</label>
       </div>
-      <label class="text-sm">Reason {{ form.reason }}</label>
+      <label class="text-sm">{% trans "Reason" %} {{ form.reason }}</label>
       <div class="flex gap-2">
-        <button class="rounded-lg border px-3 py-2 text-sm">Apply</button>
-        <a href="{% url 'inventory:product_detail' product.pk %}" class="rounded-lg border px-3 py-2 text-sm">Back</a>
+        <button class="rounded-lg border px-3 py-2 text-sm">{% trans "Apply" %}</button>
+        <a href="{% url 'inventory:product_detail' product.pk %}" class="rounded-lg border px-3 py-2 text-sm">{% trans "Back" %}</a>
       </div>
     </form>
   </section>

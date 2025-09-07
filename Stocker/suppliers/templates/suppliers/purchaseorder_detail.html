@@ -1,0 +1,75 @@
+{% extends "main/app_base.html" %}
+{% load i18n %}
+{% block title %}PO#{{ po.id }} – {{ po.supplier.name }}{% endblock %}
+{% block content %}
+<header class="flex items-center justify-between">
+  <div>
+    <h1 class="text-xl font-semibold">PO#{{ po.id }} – {{ po.supplier.name }}</h1>
+    <div class="text-sm text-gray-500">{% trans "Status" %}: {{ po.get_status_display }}</div>
+  </div>
+</header>
+
+<div class="grid md:grid-cols-2 gap-4 mt-3">
+  <section class="rounded-2xl border bg-white p-4">
+    <h2 class="text-sm text-gray-600 mb-2">{% trans "Items" %}</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b">
+          <tr class="text-left">
+            <th class="p-3">{% trans "Product" %}</th>
+            <th class="p-3">{% trans "Ordered" %}</th>
+            <th class="p-3">{% trans "Received" %}</th>
+            <th class="p-3">{% trans "Remaining" %}</th>
+            <th class="p-3">{% trans "Receive" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in items %}
+          <tr class="border-b">
+            <td class="p-3">{{ it.product.name }}</td>
+            <td class="p-3">{{ it.quantity_ordered }}</td>
+            <td class="p-3">{{ it.quantity_received }}</td>
+            <td class="p-3">{{ it.remaining }}</td>
+            <td class="p-3">
+              {% if it.remaining > 0 and not po.is_closed %}
+                <form method="post" action="{% url 'suppliers:purchaseorder_receive' po.id %}" class="flex items-center gap-2">
+                  {% csrf_token %}
+                  <input type="hidden" name="item_id" value="{{ it.id }}">
+                  <input type="number" min="1" max="{{ it.remaining }}" name="quantity" class="w-24 rounded-lg border px-2 py-1 text-sm">
+                  <button class="rounded-lg border px-3 py-1.5 text-sm">{% trans "Receive" %}</button>
+                </form>
+              {% else %}
+                <span class="text-gray-400">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td class="p-6 text-gray-500" colspan="5">{% trans "No items yet." %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% if not po.is_closed %}
+  <section class="rounded-2xl border bg-white p-4">
+    <h2 class="text-sm text-gray-600 mb-2">{% trans "Add item" %}</h2>
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="add_item" value="1">
+      {{ add_form.non_field_errors }}
+      {% for field in add_form %}
+        <label class="text-sm block">
+          <span class="block text-gray-600 mb-1">{{ field.label }}</span>
+          {{ field }}
+          {% for e in field.errors %}<span class="block text-xs text-red-600 mt-1">{{ e }}</span>{% endfor %}
+        </label>
+      {% endfor %}
+      <button class="rounded-lg border px-3 py-2 text-sm">{% trans "Add" %}</button>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+
+

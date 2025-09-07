@@ -1,13 +1,14 @@
 {% load static %}
+{% load i18n %}
 
-<aside class="w-72 shrink-0 bg-white border-r flex flex-col">
+<aside id="dashboardSidebar" class="w-72 shrink-0 bg-white border-r flex flex-col">
   <!-- Brand -->
   <div class="flex items-center gap-3 p-4 border-b">
     <img src="{% static 'images/logo.png' %}" alt="Stocker logo" width="28" height="28"
          class="h-7 w-7 rounded-md object-contain" />
     <div>
       <div class="text-lg font-semibold tracking-wide">Stocker</div>
-      <p class="text-[11px] text-gray-500">Inventory dashboard</p>
+      <p class="text-[11px] text-gray-500">{% trans "Inventory dashboard" %}</p>
     </div>
   </div>
 
@@ -26,7 +27,7 @@
       <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M3 12h7V3H3v9Zm0 9h7v-7H3v7Zm11 0h7v-9h-7v9Zm0-18v7h7V3h-7Z" />
       </svg>
-      <span>Overview</span>
+      <span>{% trans "Overview" %}</span>
     </a>
 
     <!-- Products (any product_* view) -->
@@ -40,7 +41,7 @@
       <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M3 7l9-4 9 4-9 4-9-4Zm18 4-9 4-9-4m18 0v6l-9 4-9-4v-6" />
       </svg>
-      <span>Products</span>
+      <span>{% trans "Products" %}</span>
     </a>
 
     <!-- Categories -->
@@ -54,7 +55,7 @@
       <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M4 6h16M4 12h16M4 18h8" />
       </svg>
-      <span>Categories</span>
+      <span>{% trans "Categories" %}</span>
     </a>
 
 
@@ -69,7 +70,21 @@
       <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M3 20h18M3 10h18M6 6h12M7 14h10" />
       </svg>
-      <span>Suppliers</span>
+      <span>{% trans "Suppliers" %}</span>
+    </a>
+
+    <!-- Purchase Orders -->
+    <a href="{% url 'suppliers:purchaseorder_list' %}"
+       class="group flex items-center gap-3 rounded-lg px-3 py-2.5 border transition
+              {% if '/suppliers/po' in path %}
+                bg-blue-50 text-blue-700 border-l-2 border-l-blue-500
+              {% else %}
+                hover:bg-gray-50 text-gray-700 border-l-2 border-l-transparent
+              {% endif %}">
+      <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M6 2h9l3 3v17H6zM9 8h6M9 12h6M9 16h6" />
+      </svg>
+      <span>{% trans "Purchase Orders" %}</span>
     </a>
 
     <!-- Reports (path contains '/inventory/reports') -->
@@ -83,16 +98,21 @@
       <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M4 19V5m0 14h16M4 5h16M8 19V9m4 10V7m4 12v-5" />
       </svg>
-      <span>Reports</span>
+      <span>{% trans "Reports" %}</span>
     </a>
 
-    <!-- Settings (placeholder) -->
-    <a href="#settings"
-       class="group flex items-center gap-3 rounded-lg px-3 py-2.5 border transition hover:bg-gray-50 text-gray-700 border-l-2 border-l-transparent">
+    <!-- Settings -->
+    <a href="{% url 'main:settings' %}"
+       class="group flex items-center gap-3 rounded-lg px-3 py-2.5 border transition
+              {% if request.resolver_match and request.resolver_match.url_name == 'settings' %}
+                bg-blue-50 text-blue-700 border-l-2 border-l-blue-500
+              {% else %}
+                hover:bg-gray-50 text-gray-700 border-l-2 border-l-transparent
+              {% endif %}">
       <svg viewBox="0 0 24 24" class="h-4 w-4 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm8.66 3.5a8 8 0 0 1 0 1l2.02 1.56-2 3.46-2.46-.57a8.03 8.03 0 0 1-.86.5l-.37 2.5H8.01l-.37-2.5a7.9 7.9 0 0 1-.86-.5l-2.46.57-2-3.46L4.34 12a8 8 0 0 1 0-1L2.32 9.44l2-3.46 2.46.57c.27-.18.56-.34.86-.5l.37-2.5h5.96l.37 2.5c.3.16.59.32.86.5l2.46-.57 2 3.46L20.66 11.5Z" />
       </svg>
-      <span>Settings</span>
+      <span>{% trans "Settings" %}</span>
     </a>
   </nav>
   {% endwith %}
@@ -101,7 +121,7 @@
   <div class="mt-auto p-4 border-t">
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
-      <button class="w-full rounded-lg border px-3 py-2 text-sm">Logout</button>
+      <button class="w-full rounded-lg border px-3 py-2 text-sm">{% trans "Logout" %}</button>
     </form>
   </div>
 </aside>

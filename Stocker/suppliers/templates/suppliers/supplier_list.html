@@ -1,27 +1,26 @@
 {% extends "main/app_base.html" %}
-{% block title %}Suppliers – Stocker{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Suppliers – Stocker" %}{% endblock %}
 {% block content %}
 <header class="flex items-center justify-between">
-  <h1 class="text-xl font-semibold">Suppliers</h1>
-  {% if perms.suppliers.add_supplier %}
-    <a href="{% url 'suppliers:supplier_create' %}" class="rounded-lg border px-3 py-2 text-sm">Add supplier</a>
-  {% endif %}
+  <h1 class="text-xl font-semibold">{% trans "Suppliers" %}</h1>
+  <a href="{% url 'suppliers:supplier_create' %}" class="rounded-lg border px-3 py-2 text-sm">{% trans "Add supplier" %}</a>
 </header>
 
 <form method="get" class="flex items-center gap-3">
-  <input type="text" name="q" value="{{ q }}" placeholder="Search name, email, phone, website"
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans "Search name, email, phone, website" %}"
          class="w-80 rounded-lg border px-3 py-2 text-sm">
-  <button class="rounded-lg border px-3 py-2 text-sm">Search</button>
+  <button class="rounded-lg border px-3 py-2 text-sm">{% trans "Search" %}</button>
 </form>
 
 <div class="overflow-x-auto bg-white border rounded-2xl">
   <table class="w-full text-sm">
     <thead class="border-b bg-gray-50">
       <tr class="text-left">
-        <th class="p-3">Supplier</th>
-        <th class="p-3">Contact</th>
-        <th class="p-3">Website</th>
-        <th class="p-3">Products</th>
+        <th class="p-3">{% trans "Supplier" %}</th>
+        <th class="p-3">{% trans "Contact" %}</th>
+        <th class="p-3">{% trans "Website" %}</th>
+        <th class="p-3">{% trans "Products" %}</th>
         <th class="p-3"></th>
       </tr>
     </thead>
@@ -41,15 +40,15 @@
         <td class="p-3">{{ s.product_count }}</td>
         <td class="p-3 text-right">
           {% if perms.suppliers.change_supplier %}
-            <a href="{% url 'suppliers:supplier_update' s.pk %}" class="text-blue-700 hover:underline mr-3">Edit</a>
+            <a href="{% url 'suppliers:supplier_update' s.pk %}" class="text-blue-700 hover:underline mr-3">{% trans "Edit" %}</a>
           {% endif %}
           {% if perms.suppliers.delete_supplier %}
-            <a href="{% url 'suppliers:supplier_delete' s.pk %}" class="text-red-700 hover:underline">Delete</a>
+            <a href="{% url 'suppliers:supplier_delete' s.pk %}" class="text-red-700 hover:underline">{% trans "Delete" %}</a>
           {% endif %}
         </td>
       </tr>
       {% empty %}
-      <tr><td class="p-6 text-gray-500" colspan="5">No suppliers found.</td></tr>
+      <tr><td class="p-6 text-gray-500" colspan="5">{% trans "No suppliers found." %}</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -57,9 +56,9 @@
 
 {% if is_paginated %}
   <div class="flex items-center gap-2">
-    {% if page_obj.has_previous %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
-    <span class="text-sm text-gray-600">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    {% if page_obj.has_previous %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">{% trans "Prev" %}</a>{% endif %}
+    <span class="text-sm text-gray-600">{% trans "Page" %} {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="px-3 py-1.5 border rounded" href="?q={{ q }}&page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}
   </div>
 {% endif %}
 {% endblock %}

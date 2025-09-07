@@ -1,0 +1,46 @@
+{% extends "main/app_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Settings – Stocker" %}{% endblock %}
+
+{% block content %}
+<header class="flex items-center justify-between">
+  <h1 class="text-xl font-semibold">{% trans "Settings" %}</h1>
+</header>
+
+<div class="grid md:grid-cols-2 gap-4">
+  <section class="rounded-2xl border bg-white p-4">
+    <h2 class="text-sm text-gray-600 mb-3">{% trans "Profile" %}</h2>
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      {{ profile_form.non_field_errors }}
+      {% for field in profile_form %}
+        <label class="text-sm block">
+          <span class="block text-gray-600 mb-1">{{ field.label }}</span>
+          {{ field }}
+          {% for e in field.errors %}<span class="block text-xs text-red-600 mt-1">{{ e }}</span>{% endfor %}
+        </label>
+      {% endfor %}
+      <button name="save_profile" class="rounded-lg border px-3 py-2 text-sm">{% trans "Save" %}</button>
+    </form>
+  </section>
+
+  <section class="rounded-2xl border bg-white p-4">
+    <h2 class="text-sm text-gray-600 mb-3">{% trans "Preferences" %}</h2>
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="save_prefs" value="1">
+      {{ prefs_form.non_field_errors }}
+      {% for field in prefs_form %}
+        <label class="text-sm block">
+          <span class="block text-gray-600 mb-1">{{ field.label }}</span>
+          {{ field }}
+          {% for e in field.errors %}<span class="block text-xs text-red-600 mt-1">{{ e }}</span>{% endfor %}
+        </label>
+      {% endfor %}
+      <button class="rounded-lg border px-3 py-2 text-sm">{% trans "Save" %}</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+

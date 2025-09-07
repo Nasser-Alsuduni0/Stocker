@@ -1,4 +1,5 @@
 {% extends "main/app_base.html" %}
+{% load i18n %}
 {% block title %}{{ supplier.name }} – Stocker{% endblock %}
 {% block content %}
 <header class="flex items-center justify-between">
@@ -15,32 +16,32 @@
   </div>
   <div class="flex gap-2">
     {% if perms.suppliers.change_supplier %}
-      <a href="{% url 'suppliers:supplier_update' supplier.pk %}" class="rounded-lg border px-3 py-2 text-sm">Edit</a>
+      <a href="{% url 'suppliers:supplier_update' supplier.pk %}" class="rounded-lg border px-3 py-2 text-sm">{% trans "Edit" %}</a>
     {% endif %}
     {% if perms.suppliers.delete_supplier %}
-      <a href="{% url 'suppliers:supplier_delete' supplier.pk %}" class="rounded-lg border px-3 py-2 text-sm text-red-700">Delete</a>
+      <a href="{% url 'suppliers:supplier_delete' supplier.pk %}" class="rounded-lg border px-3 py-2 text-sm text-red-700">{% trans "Delete" %}</a>
     {% endif %}
   </div>
 </header>
 
 <div class="grid md:grid-cols-3 gap-4">
   <div class="rounded-2xl border bg-white p-4">
-    <div class="text-sm text-gray-500 mb-1">Website</div>
+    <div class="text-sm text-gray-500 mb-1">{% trans "Website" %}</div>
     <div>{% if supplier.website %}<a href="{{ supplier.website }}" target="_blank" class="underline text-blue-700">{{ supplier.website }}</a>{% else %}—{% endif %}</div>
   </div>
   <div class="rounded-2xl border bg-white p-4 md:col-span-2">
-    <div class="text-sm text-gray-500 mb-1">Address</div>
+    <div class="text-sm text-gray-500 mb-1">{% trans "Address" %}</div>
     <div class="text-sm text-gray-700">{{ supplier.address|linebreaksbr|default:"—" }}</div>
   </div>
 </div>
 
 <div class="rounded-2xl border bg-white p-4">
-  <h2 class="text-sm text-gray-600 mb-3">Products supplied</h2>
+  <h2 class="text-sm text-gray-600 mb-3">{% trans "Products supplied" %}</h2>
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b">
         <tr class="text-left">
-          <th class="p-3">Product</th><th class="p-3">SKU</th><th class="p-3">Category</th><th class="p-3">On hand</th>
+          <th class="p-3">{% trans "Product" %}</th><th class="p-3">{% trans "SKU" %}</th><th class="p-3">{% trans "Category" %}</th><th class="p-3">{% trans "On hand" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -52,7 +53,7 @@
           <td class="p-3">{{ p.quantity_on_hand }}</td>
         </tr>
         {% empty %}
-        <tr><td class="p-6 text-gray-500" colspan="4">No products linked yet.</td></tr>
+        <tr><td class="p-6 text-gray-500" colspan="4">{% trans "No products linked yet." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>

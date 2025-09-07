@@ -1,8 +1,9 @@
 {% extends "main/app_base.html" %}
-{% block title %}Category – Stocker{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Category – Stocker" %}{% endblock %}
 
 {% block content %}
-<h1 class="text-xl font-semibold">{{ view.object|default:"New Category" }}</h1>
+<h1 class="text-xl font-semibold">{{ view.object|default:_('New Category') }}</h1>
 
 <form method="post" class="space-y-4 bg-white border rounded-2xl p-4 max-w-xl">
   {% csrf_token %}
@@ -21,8 +22,8 @@
   </label>
 
   <div class="flex gap-2">
-    <button class="rounded-lg border px-3 py-2 text-sm">Save</button>
-    <a href="{% url 'inventory:category_list' %}" class="rounded-lg border px-3 py-2 text-sm">Cancel</a>
+    <button class="rounded-lg border px-3 py-2 text-sm">{% trans "Save" %}</button>
+    <a href="{% url 'inventory:category_list' %}" class="rounded-lg border px-3 py-2 text-sm">{% trans "Cancel" %}</a>
   </div>
 </form>
 {% endblock %}

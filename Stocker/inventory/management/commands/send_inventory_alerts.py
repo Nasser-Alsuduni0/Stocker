@@ -23,12 +23,13 @@ class Command(BaseCommand):
         to_email = opts["to"]
         only = opts["only"]
 
-        # Low stock
+        # Low stock (global across users). If you want per-user emails, scope by owner.
         low_qs = Product.objects.filter(quantity_on_hand__lte=F("reorder_level")).order_by("name")
 
         # Expiry (within N days, not null, and not already expired beyond window)
         today = date.today()
         end = today + timedelta(days=days)
+        # Expiry (global across users). If you want per-user emails, scope by owner.
         exp_qs = Product.objects.filter(expiry_date__isnull=False, expiry_date__lte=end).order_by("expiry_date", "name")
 
         sent_low = sent_exp = 0

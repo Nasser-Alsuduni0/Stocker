@@ -1,37 +1,51 @@
 {% url 'main:dashboard' as dashboard_url %}
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}" class="h-full">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sign in – Stocker</title>
+  <title>{% trans "Sign in – Stocker" %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen grid place-items-center bg-gray-50 text-gray-800">
-  <div class="w-full max-w-sm rounded-2xl border bg-white p-6">
-    <h1 class="text-xl font-semibold mb-4 text-center">Sign in</h1>
+  <div class="w-full max-w-sm rounded-2xl border bg-white p-6 relative">
+    <a href="{% url 'main:home' %}"
+       class="absolute top-3 left-3 inline-flex items-center justify-center h-8 w-8 rounded-full border bg-white text-gray-700 hover:text-gray-900"
+       aria-label="{% trans "Back to Home" %}">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-4 w-4">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+    <h1 class="text-xl font-semibold mb-4 text-center">{% trans "Sign in" %}</h1>
     {% if form.errors %}
       <div class="mb-3 rounded border border-red-300 bg-red-50 text-red-700 p-3 text-sm">
-        Invalid username/password.
+        {% if form.non_field_errors %}
+          {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+        {% else %}
+          {% trans "Invalid username/password." %}
+        {% endif %}
       </div>
     {% endif %}
     <form method="post" action="{% url 'login' %}">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next|default:dashboard_url }}">
       <div class="mb-3">
-        <label class="block text-sm mb-1">Username</label>
-        <input type="text" name="username" autofocus required class="w-full rounded-lg border px-3 py-2">
+        <label class="block text-sm mb-1">{% trans "Username" %}</label>
+        <input type="text" name="username" value="{{ form.username.value|default_if_none:'' }}" autofocus required autocomplete="username" class="w-full rounded-lg border px-3 py-2">
+        {% for e in form.username.errors %}<p class="text-xs text-red-600 mt-1">{{ e }}</p>{% endfor %}
       </div>
       <div class="mb-4">
-        <label class="block text-sm mb-1">Password</label>
-        <input type="password" name="password" required class="w-full rounded-lg border px-3 py-2">
+        <label class="block text-sm mb-1">{% trans "Password" %}</label>
+        <input type="password" name="password" required autocomplete="current-password" class="w-full rounded-lg border px-3 py-2">
+        {% for e in form.password.errors %}<p class="text-xs text-red-600 mt-1">{{ e }}</p>{% endfor %}
       </div>
-      <button class="w-full rounded-lg border px-3 py-2">Sign in</button>
+      <button class="w-full rounded-lg border px-3 py-2">{% trans "Sign in" %}</button>
     </form>
     <div class="text-xs text-gray-500 mt-3 text-center">
-      <a class="underline" href="{% url 'password_reset' %}">Forgot password?</a>
+      <a class="underline" href="{% url 'password_reset' %}">{% trans "Forgot password?" %}</a>
       <span class="mx-2">·</span>
-      <a class="underline" href="{% url 'accounts:signup' %}{% if next %}?next={{ next }}{% endif %}">Create account</a>
+      <a class="underline" href="{% url 'accounts:signup' %}{% if next %}?next={{ next }}{% endif %}">{% trans "Create account" %}</a>
     </div>
   </div>
 </body>

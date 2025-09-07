@@ -25,7 +25,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        qs = Product.objects.select_related("category").order_by("name")
+        qs = Product.objects.select_related("category").filter(owner=self.request.user).order_by("name")
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(
@@ -62,6 +62,15 @@ class ProductCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
     template_name = "inventory/product_form.html"
     success_url = reverse_lazy("inventory:product_list")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 class ProductUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = "inventory.change_product"
     model = Product
@@ -69,16 +78,27 @@ class ProductUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
     template_name = "inventory/product_form.html"
     success_url = reverse_lazy("inventory:product_list")
 
+    def get_queryset(self):
+        return Product.objects.filter(owner=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 class ProductDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = "inventory.delete_product"
     model = Product
     template_name = "inventory/product_confirm_delete.html"
     success_url = reverse_lazy("inventory:product_list")
 
+    def get_queryset(self):
+        return Product.objects.filter(owner=self.request.user)
+
 @login_required
 @permission_required("inventory.add_stockmovement", raise_exception=True)
 def adjust_stock(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(Product, pk=pk, owner=request.user)
     if request.method == "POST":
         form = StockAdjustForm(request.POST)
         if form.is_valid():
@@ -104,6 +124,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("q", "")
         return (Category.objects
                 .annotate(product_count=Count("products"))
+                .filter(owner=self.request.user)
                 .filter(Q(name__icontains=q) | Q(description__icontains=q))
                 .order_by("name"))
 
@@ -112,12 +133,15 @@ class CategoryListView(LoginRequiredMixin, ListView):
         ctx["q"] = self.request.GET.get("q", "")
         return ctx
 
-class CategoryCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    permission_required = "inventory.add_category"
+class CategoryCreateView(LoginRequiredMixin, CreateView):
     model = Category
     form_class = CategoryForm
     template_name = "inventory/category_form.html"
     success_url = reverse_lazy("inventory:category_list")
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 class CategoryUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = "inventory.change_category"
@@ -126,11 +150,17 @@ class CategoryUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
     template_name = "inventory/category_form.html"
     success_url = reverse_lazy("inventory:category_list")
 
+    def get_queryset(self):
+        return Category.objects.filter(owner=self.request.user)
+
 class CategoryDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = "inventory.delete_category"
     model = Category
     template_name = "inventory/category_confirm_delete.html"
     success_url = reverse_lazy("inventory:category_list")
+
+    def get_queryset(self):
+        return Category.objects.filter(owner=self.request.user)
 
 def _parse_dates(request):
     """Parse ?start=YYYY-MM-DD&end=YYYY-MM-DD; default = last 30 days (inclusive)."""
@@ -168,7 +198,7 @@ class ReportsView(TemplateView):
             F("quantity_on_hand") * F("price_cost"),
             output_field=DecimalField(max_digits=14, decimal_places=2),
         )
-        inv_agg = Product.objects.aggregate(
+        inv_agg = Product.objects.filter(owner=self.request.user).aggregate(
             total_products=Count("id"),
             total_on_hand=Coalesce(Sum("quantity_on_hand"), V(0)),
             total_value=Coalesce(Sum(value_expr), V(0), output_field=DecimalField(max_digits=14, decimal_places=2)),
@@ -181,7 +211,7 @@ class ReportsView(TemplateView):
         )
 
         category_rows = (
-            Product.objects
+            Product.objects.filter(owner=self.request.user)
             .values("category__id", "category__name")
             .annotate(
                 product_count=Count("id"),
@@ -191,7 +221,7 @@ class ReportsView(TemplateView):
             .order_by("category__name")
         )
 
-        mvs = StockMovement.objects.filter(created_at__date__gte=start, created_at__date__lte=end)
+        mvs = StockMovement.objects.filter(product__owner=self.request.user, created_at__date__gte=start, created_at__date__lte=end)
         mv_agg = mvs.aggregate(
             in_qty=Coalesce(Sum(Case(When(movement_type="IN", then=F("quantity")), output_field=IntegerField())), V(0)),
             out_qty=Coalesce(Sum(Case(When(movement_type="OUT", then=F("quantity")), output_field=IntegerField())), V(0)),
@@ -209,7 +239,7 @@ class ReportsView(TemplateView):
             output_field=DecimalField(max_digits=14, decimal_places=2),
         )
         supplier_rows = (
-            Supplier.objects
+            Supplier.objects.filter(owner=self.request.user)
             .annotate(
                 product_count=Count("products", distinct=True),
                 on_hand=Coalesce(Sum("products__quantity_on_hand"), V(0)),
@@ -258,7 +288,7 @@ class ReportsView(TemplateView):
         })
 
         low_stock_list = (
-            Product.objects
+            Product.objects.filter(owner=self.request.user)
             .filter(quantity_on_hand__lte=F("reorder_level"))
             .select_related("category")
             .order_by("name")[:20]
@@ -283,7 +313,7 @@ def inventory_report_csv(request):
     response["Content-Disposition"] = 'attachment; filename="inventory_report.csv"'
     writer = csv.writer(response)
     writer.writerow(["SKU","Name","Category","On hand","Reorder level","Cost","Valuation","Low stock?"])
-    qs = Product.objects.select_related("category").order_by("name")
+    qs = Product.objects.select_related("category").filter(owner=request.user).order_by("name")
     for p in qs:
         valuation = (p.quantity_on_hand or 0) * (p.price_cost or 0)
         writer.writerow([
@@ -307,7 +337,7 @@ def supplier_report_csv(request):
         output_field=DecimalField(max_digits=14, decimal_places=2),
     )
     qs = (
-        Supplier.objects
+        Supplier.objects.filter(owner=request.user)
         .annotate(
             product_count=Count("products", distinct=True),
             on_hand=Coalesce(Sum("products__quantity_on_hand"), V(0)),

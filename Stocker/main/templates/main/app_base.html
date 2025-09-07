@@ -1,4 +1,6 @@
 {% load static %}
+{% load i18n %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,12 +13,31 @@
   <div class="min-h-screen flex">
     {% include "main/partials/sidebar.html" %}
     <main class="flex-1">
+      <div class="px-6 pt-4">
+        <button id="toggleSidebarBtn" class="mb-2 rounded border px-3 py-1.5 text-sm">{% trans "Toggle menu" %}</button>
+      </div>
       <section class="max-w-6xl mx-auto p-6 space-y-6">
         {% block content %}{% endblock %}
       </section>
     </main>
   </div>
   {% block scripts %}{% endblock %}
+
+  <script>
+    (function(){
+      var sidebar = document.getElementById('dashboardSidebar');
+      var btn = document.getElementById('toggleSidebarBtn');
+      if (!sidebar || !btn) return;
+      var key = 'dashboardSidebarHidden';
+      var apply = function(hidden){ sidebar.style.display = hidden ? 'none' : ''; };
+      try { apply(localStorage.getItem(key) === '1'); } catch (_) {}
+      btn.addEventListener('click', function(){
+        var hidden = sidebar.style.display !== 'none' ? true : false;
+        apply(hidden);
+        try { localStorage.setItem(key, hidden ? '1' : '0'); } catch (_) {}
+      });
+    })();
+  </script>
 
 </body>
 </html>
